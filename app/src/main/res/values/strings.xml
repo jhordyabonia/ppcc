@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Petro Presidente Captura a Los Corruptos</string>
+    <string name="game_name">Captura a Los Corruptos</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Gustavo Petro Presidente</string>
+    <string name="msj_share"> Colombia Humana, Gustavo Petro Presidente Captura los Corruptos</string>
+    <string name="nav_header_subtitle">Colombia Humana</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>share
+    <string name="share">Comparte, Petro Presidente, Captura los corruptos, Colombia Humana</string>
+</resources>
