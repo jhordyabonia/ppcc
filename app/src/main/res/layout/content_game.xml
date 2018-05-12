@@ -23,5 +23,11 @@
         app:layout_constraintVertical_bias="0.422"
         app:srcCompat="@android:drawable/sym_def_app_icon" />
 
+    <TableRow
+        android:layout_width="368dp"
+        android:layout_height="192dp"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
+
 
 </android.support.constraint.ConstraintLayout>

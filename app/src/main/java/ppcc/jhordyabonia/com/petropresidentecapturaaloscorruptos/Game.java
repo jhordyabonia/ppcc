@@ -232,7 +232,10 @@ public class Game extends AppCompatActivity
 
             if (intent2.resolveActivity(getPackageManager()) != null)
                 startActivity(chooser);
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_help) {
+
+        }
+        else if (id == R.id.nav_send) {
 
         }
 
