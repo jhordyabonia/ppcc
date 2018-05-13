@@ -6,19 +6,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@android:drawable/divider_horizontal_textfield"
             android:title="Corruptos" />
         <item
             android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@android:drawable/ic_secure"
             android:title="Capturados" />
         <item
             android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@android:drawable/ic_partial_secure"
             android:title="Profugos" />
         <item
             android:id="@+id/nav_help"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@android:drawable/ic_menu_help"
             android:title="Ayuda" />
     </group>
 

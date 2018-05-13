@@ -8,6 +8,9 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.BaseInterpolator;
 import android.view.animation.BounceInterpolator;
@@ -35,24 +39,77 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
+
 public class Game extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener  {
     private static final String URL_SERVER = "http://123seller.azurewebsites.net/ppcc/";
+    private static boolean MOVE=false ;
     private int WIDTH =0,HEIGHT =0;
     ObjectAnimator translateX,translateY;
+    FloatingActionButton fab;
     TextView corrupto;
+    View tapiz;
+    WithoutCoins withoutCoins;
     Store store;
     String NAME="Ningun";
-    int LEVEL=0,LIVES=0,SPEED=1000;
+    int LEVEL=-1,LIVES=0,SPEED=1000;
+
+    InterstitialAd interstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+        getWindow().setFlags(
+                WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA,
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setContentView(R.layout.activity_game);
+
+        // Initialize the Mobile Ads SDK.
+        MobileAds.initialize(this, "ca-app-pub-7036101536380541~1515752766");
+
+        // Create the InterstitialAd and set the adUnitId.
+        interstitialAd = new InterstitialAd(this);
+        // Defined in res/values/strings.xml
+        interstitialAd.setAdUnitId(getString(R.string.ad_unit_id));
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                setCorrupto(++LEVEL);
+                if(LEVEL==0)
+                    withoutCoins.show(getSupportFragmentManager(), "missiles");
+                if(!MOVE)
+                    move();
+            }
+            @Override
+            public void onAdLoaded ()
+            { interstitialAd.show();}
+
+            @Override
+            public void onAdFailedToLoad(int errorCode)
+            {
+                if(AdRequest.ERROR_CODE_NETWORK_ERROR==errorCode)
+                {  startGame();}
+            }
+        });
+        startGame();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,6 +117,7 @@ public class Game extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -76,6 +134,7 @@ public class Game extends AppCompatActivity
         WIDTH = metrics.widthPixels;
         HEIGHT = metrics.heightPixels;
         corrupto=(TextView) findViewById(R.id.hellow);
+        corrupto.setVisibility(View.INVISIBLE);
         float coo[][]=getCoordenadas();
         translateX = ObjectAnimator
                 .ofFloat(corrupto,"translationX",coo[0]);
@@ -84,22 +143,71 @@ public class Game extends AppCompatActivity
         corrupto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(LIVES>0)
+                if(LIVES>0) {
                     LIVES--;
-                else setCorrupto(++LEVEL);
+                    corrupto.setText(""+LIVES);
+                }else {
+                    corrupto.setVisibility(View.INVISIBLE);
+                    startGame();
+                }
             }
         });
-        findViewById(R.id.main).setOnClickListener(this);
+        tapiz=findViewById(R.id.main);
+        tapiz.setOnClickListener(this);
         store=new Store(this);
+        withoutCoins= new WithoutCoins(this);
 
         SharedPreferences sharedPref = getSharedPreferences(Store.STORE, Context.MODE_PRIVATE);
         LEVEL=sharedPref.getInt(Store._LEVEL,0);
-        setCorrupto(LEVEL);
-        move();
+        win();
     }
+
+    private void startGame() {
+        // Request a new ad if one isn't already loaded, hide the button, and kick off the timer.
+        if (!interstitialAd.isLoading()/* && !interstitialAd.isLoaded()*/){
+            AdRequest.Builder builder = new AdRequest.Builder();
+           // builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+            interstitialAd.loadAd(builder.build());
+        }
+    }
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            translateX.resume();
+            translateY.resume();
+        }
+    }
+    @Override
+    public void onPause()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            translateX.pause();
+            translateY.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        translateX.removeAllListeners();
+        translateX.cancel();
+        translateX.end();
+        translateX=null;
+
+        translateY.removeAllListeners();
+        translateY.cancel();
+        translateY.end();
+        translateY=null;
+        super.onDestroy();
+    }
+
     public void setCorrupto(int t)
     {
-        try{
+        if(t>store.get().length())
+            win();
+        else try{
             Toast.makeText(Game.this,NAME+" Capturado", Toast.LENGTH_LONG).show();
             JSONObject tmp=store.get(t);
             corrupto.setBackgroundResource(tmp.getInt(Store._IMG));
@@ -107,6 +215,8 @@ public class Game extends AppCompatActivity
             NAME=tmp.getString(Store._NAME);
             SPEED=tmp.getInt(Store._VELOCIDAD);
             corrupto.setText(""+LIVES);
+            corrupto.setVisibility(View.VISIBLE);
+            tapiz.setBackgroundColor(Color.WHITE);
             save(t);
         }catch(JSONException e){}
     }
@@ -162,6 +272,7 @@ public class Game extends AppCompatActivity
         });
         translateX.start();
         translateY.start();
+        MOVE=true;
     }
     private float[][] getCoordenadas()
     {
@@ -188,7 +299,7 @@ public class Game extends AppCompatActivity
             if(count>2){reverse=false;count=0;}
             if(count<-2){reverse=true;count=0;}
             if(reverse) {
-                if (y -((heigth / DIVISOR))> 0)
+                if (y -((heigth / DIVISOR))> 50)
                     out[1][m] = -m*(heigth / DIVISOR);// out[1][m] = y - (heigth / 10);
                 count++;
             }else {
@@ -198,6 +309,14 @@ public class Game extends AppCompatActivity
             }
         }
         return out;
+    }
+    private void win()
+    {
+        //getActionBar().hide();
+        corrupto.setVisibility(View.INVISIBLE);
+        tapiz.setBackgroundResource(R.mipmap.bg_ch);
+        Snackbar.make(fab, "La utopía... Colombia humana", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
     }
     @Override
     public void onBackPressed() {
@@ -215,13 +334,13 @@ public class Game extends AppCompatActivity
 
        Intent intent =new Intent(Game.this,Capturados.class);
         if (id == R.id.nav_camera) {
-            intent.putExtra(Capturados.MOSTRAR,Capturados.MOSTRAR_TODOS);
+            intent.putExtra(Capturados.MOSTRAR,Capturados.MOSTRAR_CAPTURADOS);
             startActivity(intent);
         } else if (id == R.id.nav_gallery) {
             intent.putExtra(Capturados.MOSTRAR,Capturados.MOSTRAR_CAPTURADOS);
             startActivity(intent);
         } else if (id == R.id.nav_slideshow) {
-            intent.putExtra(Capturados.MOSTRAR,Capturados.MOSTRAR_PRFUGOS);
+            intent.putExtra(Capturados.MOSTRAR,Capturados.MOSTRAR_TODOS);
             startActivity(intent);
         } else if (id == R.id.nav_share) {
 
@@ -233,10 +352,13 @@ public class Game extends AppCompatActivity
             if (intent2.resolveActivity(getPackageManager()) != null)
                 startActivity(chooser);
         } else if (id == R.id.nav_help) {
-
+            withoutCoins.show(getSupportFragmentManager(), "missiles");
         }
         else if (id == R.id.nav_send) {
-
+            String url = "http://123seller.azurewebsites.net/";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
