@@ -166,7 +166,7 @@ public class Game extends AppCompatActivity
         // Request a new ad if one isn't already loaded, hide the button, and kick off the timer.
         if (!interstitialAd.isLoading()/* && !interstitialAd.isLoaded()*/){
             AdRequest.Builder builder = new AdRequest.Builder();
-            builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+           // builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
             interstitialAd.loadAd(builder.build());
         }
     }
