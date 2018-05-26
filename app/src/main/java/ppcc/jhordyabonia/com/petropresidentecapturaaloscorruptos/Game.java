@@ -166,7 +166,7 @@ public class Game extends AppCompatActivity
         // Request a new ad if one isn't already loaded, hide the button, and kick off the timer.
         if (!interstitialAd.isLoading()/* && !interstitialAd.isLoaded()*/){
             AdRequest.Builder builder = new AdRequest.Builder();
-           // builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+            //builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
             interstitialAd.loadAd(builder.build());
         }
     }
@@ -317,6 +317,10 @@ public class Game extends AppCompatActivity
         tapiz.setBackgroundResource(R.mipmap.bg_ch);
         Snackbar.make(fab, "La utopía... Colombia humana", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
+        String url = "http://123seller.azurewebsites.net/";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
     }
     @Override
     public void onBackPressed() {
@@ -325,6 +329,10 @@ public class Game extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            String url = "http://123seller.azurewebsites.net/";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
         }
     }
    @Override
