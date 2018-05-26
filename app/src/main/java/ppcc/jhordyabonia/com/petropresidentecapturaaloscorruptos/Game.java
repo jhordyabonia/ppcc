@@ -166,7 +166,7 @@ public class Game extends AppCompatActivity
         // Request a new ad if one isn't already loaded, hide the button, and kick off the timer.
         if (!interstitialAd.isLoading()/* && !interstitialAd.isLoaded()*/){
             AdRequest.Builder builder = new AdRequest.Builder();
-            //builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+            builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
             interstitialAd.loadAd(builder.build());
         }
     }
@@ -313,6 +313,12 @@ public class Game extends AppCompatActivity
     private void win()
     {
         //getActionBar().hide();
+
+        SharedPreferences sharedPref =
+                getSharedPreferences(Store.STORE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(Store._LEVEL,0);
+        editor.commit();
         corrupto.setVisibility(View.INVISIBLE);
         tapiz.setBackgroundResource(R.mipmap.bg_ch);
         Snackbar.make(fab, "La utopía... Colombia humana", Snackbar.LENGTH_LONG)
